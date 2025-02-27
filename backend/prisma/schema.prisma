@@ -1,0 +1,55 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model UserInfo {
+  id           String          @id @default(uuid())
+  profilePhoto String
+  firstName    String
+  lastName     String
+  dob          DateTime
+  occupation   String
+  gender       String
+  contact      UserContact?
+  address      UserAddress?
+  academics    UserAcademics[]
+}
+
+model UserContact {
+  id          String   @id @default(uuid())
+  email       String   @unique
+  phoneNumber String
+  fax         String?
+  linkedInUrl String?
+  userId      String   @unique
+  user        UserInfo @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserAddress {
+  id      String   @id @default(uuid())
+  address String
+  city    String
+  state   String
+  country String
+  zipCode String
+  userId  String   @unique
+  user    UserInfo @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserAcademics {
+  id     String   @id @default(uuid())
+  school String
+  userId String
+  user   UserInfo @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

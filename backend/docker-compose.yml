@@ -1,0 +1,17 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:latest
+    container_name: user_mgmt
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: rootv
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: user_mgmt_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
