@@ -6,7 +6,7 @@ import {
 import { DatabaseService } from 'src/database/database.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { isDate, isString } from 'class-validator';
+import { isString } from 'class-validator';
 
 @Injectable()
 export class UserService {
@@ -26,7 +26,7 @@ export class UserService {
         profilePhoto: createUserDto.profilePhoto,
         firstName: createUserDto.firstName,
         lastName: createUserDto.lastName,
-        dob: new Date(createUserDto.dob),
+        dob: createUserDto.dob,
         occupation: createUserDto.occupation,
         gender: createUserDto.gender,
         contact: {
@@ -73,38 +73,32 @@ export class UserService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
-    const dob = updateUserDto.dob
-      ? new Date(updateUserDto.dob as string)
-      : null;
+    const { academics, contact, address } = updateUserDto;
 
-    if (!isDate(dob) || isNaN(dob.getTime())) {
-      throw new BadRequestException(
-        'Date of Birth Format is Invalid, Use A MM-DD-YYYY Format!',
-      );
-    }
-
-    if (
-      !Array.isArray(updateUserDto.academics) ||
-      !updateUserDto.academics.every(isString)
-    ) {
-      throw new BadRequestException(
-        'Academics Must Be An Array Of School Names!',
-      );
+    // Validate academics if provided
+    if (academics) {
+      if (
+        !Array.isArray(academics) ||
+        !academics.every((entry) => isString(entry.school))
+      ) {
+        throw new BadRequestException(
+          'Academics must be an array of school names!',
+        );
+      }
     }
 
     return this.databaseService.userInfo.update({
       where: { id },
       data: {
         ...updateUserDto,
-        dob,
-        contact: { update: updateUserDto.contact },
-        address: { update: updateUserDto.address },
-        academics: {
-          deleteMany: {},
-          create: updateUserDto.academics.map((entry) => ({
-            school: entry.school,
-          })),
-        },
+        contact: contact ? { update: contact } : undefined,
+        address: address ? { update: address } : undefined,
+        academics: academics
+          ? {
+              deleteMany: {},
+              create: academics.map((entry) => ({ school: entry.school })),
+            }
+          : undefined,
       },
       include: { contact: true, address: true, academics: true },
     });

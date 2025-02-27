@@ -1,33 +1,11 @@
+import { Transform, Type } from 'class-transformer';
 import {
   IsEmail,
   IsOptional,
   IsString,
-  IsDateString,
+  IsDate,
+  ValidateNested,
 } from 'class-validator';
-
-export class CreateUserDto {
-  @IsString()
-  profilePhoto: string;
-
-  @IsString()
-  firstName: string;
-
-  @IsString()
-  lastName: string;
-
-  @IsDateString()
-  dob: string;
-
-  @IsString()
-  occupation: string;
-
-  @IsString()
-  gender: string;
-
-  contact: UserContactDto;
-  address: UserAddressDto;
-  academics: UserAcademicDto[];
-}
 
 export class UserContactDto {
   @IsEmail()
@@ -65,4 +43,37 @@ export class UserAddressDto {
 export class UserAcademicDto {
   @IsString()
   school: string;
+}
+
+export class CreateUserDto {
+  @IsString()
+  profilePhoto: string;
+
+  @IsString()
+  firstName: string;
+
+  @IsString()
+  lastName: string;
+
+  @IsDate()
+  @Transform(({ value }) => new Date(value))
+  dob: string;
+
+  @IsString()
+  occupation: string;
+
+  @IsString()
+  gender: string;
+
+  @ValidateNested()
+  @Type(() => UserContactDto)
+  contact: UserContactDto;
+
+  @ValidateNested()
+  @Type(() => UserAddressDto)
+  address: UserAddressDto;
+
+  @ValidateNested()
+  @Type(() => UserAcademicDto)
+  academics: UserAcademicDto[];
 }
